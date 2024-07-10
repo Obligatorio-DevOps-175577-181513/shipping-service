@@ -39,7 +39,7 @@ jobs:
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Obligatorio-DevOps-175577-181513_shipping-service
         
         
- # Set up Terraform
+      # Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
 
@@ -48,19 +48,25 @@ jobs:
         run: terraform init
         working-directory: ./terraform/ecr
 
-      - name: Terraform Apply for ECR
+      - name: Check and Import ECR Repository
+        id: ecr-check
+        run: |
+          REPO_EXISTS=$(aws ecr describe-repositories --repository-names shipping-service --region ${{ secrets.AWS_REGION }} || echo "not found")
+          if [[ "$REPO_EXISTS" != "not found" ]]; then
+            terraform import aws_ecr_repository.shipping_service shipping-service || exit 0
+          fi
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: terraform apply -auto-approve
-        working-directory: ./terraform/ecr
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        working-directory: ./terraform
 
-      # Log in to Amazon ECR
+       # Log in to Amazon ECR
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
-          region: ${{ secrets.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       # Build, tag, and push Docker image to ECR
       - name: Build, tag, and push Docker image to ECR
