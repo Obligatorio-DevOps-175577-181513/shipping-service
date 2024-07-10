@@ -1,4 +1,4 @@
-name: SonarCloud
+name: CI/CD Pipeline
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   build:
-    name: Build and analyze
+    name: Build, Analyze, and Push to ECR
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -37,3 +37,37 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Obligatorio-DevOps-175577-181513_shipping-service
+        
+        
+ # Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      # Initialize and apply Terraform for ECR
+      - name: Terraform Init for ECR
+        run: terraform init
+        working-directory: ./terraform/ecr
+
+      - name: Terraform Apply for ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform apply -auto-approve
+        working-directory: ./terraform/ecr
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          region: ${{ secrets.AWS_REGION }}
+
+      # Build, tag, and push Docker image to ECR
+      - name: Build, tag, and push Docker image to ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: shipping-service
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
