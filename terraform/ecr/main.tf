@@ -11,4 +11,7 @@ resource "aws_ecr_repository" "shipping_service" {
   tags = {
     Name = "shipping-service"
   }
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
