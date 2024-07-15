@@ -6,7 +6,7 @@ on:
       - production
       - branch-staging
       - branch-develop
-      - '*'
+      
   pull_request:
     types: [opened, synchronize, reopened]
 
