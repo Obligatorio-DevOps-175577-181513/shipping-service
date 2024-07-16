@@ -85,10 +85,9 @@ jobs:
 
       - name: Log in to Amazon ECR
         id: login-ecr
-        env:
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          mas-password: 'false'
+          mask-password: 'false'
 
       - name: Build and push Docker image to ECR
         env:
