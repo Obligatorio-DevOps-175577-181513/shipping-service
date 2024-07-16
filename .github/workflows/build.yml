@@ -72,12 +72,15 @@ jobs:
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/production' || github.ref == 'refs/heads/branch-staging' || github.ref == 'refs/heads/branch-develop') }}
     steps:
       - uses: actions/checkout@v3
+  
+      - name: Debug AWS_REGION
+         run: echo "AWS_REGION is ${{ secrets.AWS_REGION }}"
 
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
-          region: ${{ secrets.AWS_REGION }}
+          region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Build and push Docker image to ECR
         env:
