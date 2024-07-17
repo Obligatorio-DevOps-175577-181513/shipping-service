@@ -1,12 +1,35 @@
-name: CI/CD Pipeline
+name: Shipping MS build and deploy
 
 on:
+  workflow_call:
+    inputs:
+    CI_ENV:
+      required: true
+      type: string
+    CONTENTFUL_ENVIRONMENT:
+      required: true
+      type: string
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
+      ECR_REPOSITORY:
+        required: true
+      ECR_REGISTRY:
+        required: true
+
+
   push:
     branches:
       - production
       - branch-staging
       - branch-develop
-      
+
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -23,7 +46,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 17
-          distribution: 'zulu'
+          distribution: "zulu"
 
       - name: Cache Maven packages
         uses: actions/cache@v3
@@ -48,7 +71,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 17
-          distribution: 'zulu'
+          distribution: "zulu"
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
@@ -73,15 +96,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
       - name: Log in to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: "false"
 
       - name: Build and push Docker image to ECR
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: shipping-service
-          IMAGE_TAG: ${{ github.sha }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: latest
+          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
