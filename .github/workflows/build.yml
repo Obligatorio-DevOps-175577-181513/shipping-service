@@ -72,9 +72,6 @@ jobs:
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/production' || github.ref == 'refs/heads/branch-staging' || github.ref == 'refs/heads/branch-develop') }}
     steps:
       - uses: actions/checkout@v3
-  
-      - name: Debug AWS_DEFAULT_REGION
-        run: echo "AWS_DEFAULT_REGION is ${{ secrets.AWS_DEFAULT_REGION }}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -97,4 +94,5 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker login --username AWS --password-stdin $ECR_REGISTRY
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
