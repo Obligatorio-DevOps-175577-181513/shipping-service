@@ -88,6 +88,10 @@ jobs:
           mvn -B compile
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Obligatorio-DevOps-175577-181513_shipping-service -Dsonar.java.binaries=target/classes
 
+
+      - name: List files in target directory
+        run: ls -la target
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
         with:
