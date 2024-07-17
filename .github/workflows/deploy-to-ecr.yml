@@ -58,6 +58,13 @@ jobs:
       - name: Build with Maven
         run: mvn -B verify
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: shipping-service-jar
+          path: target/*.jar
+
+
   analyze:
     name: Analyze
     needs: build
@@ -88,16 +95,7 @@ jobs:
           mvn -B compile
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Obligatorio-DevOps-175577-181513_shipping-service -Dsonar.java.binaries=target/classes
 
-
-      - name: List files in target directory
-        run: ls -la target/classes
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: shipping-service-jar
-          path: target/*.jar
-
+     
   push_to_ecr:
     name: Push Docker Image to ECR
     needs: analyze
