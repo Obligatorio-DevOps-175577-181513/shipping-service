@@ -3,12 +3,12 @@ name: Shipping MS build and deploy
 on:
   workflow_call:
     inputs:
-    CI_ENV:
-      required: true
-      type: string
-    CONTENTFUL_ENVIRONMENT:
-      required: true
-      type: string
+      CI_ENV:
+        required: true
+        type: string
+      CONTENTFUL_ENVIRONMENT:
+        required: true
+        type: string
     secrets:
       SONAR_TOKEN:
         required: true
