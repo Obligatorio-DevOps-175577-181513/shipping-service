@@ -1,6 +1,29 @@
 name: Shipping MS build and deploy
 
 on:
+  workflow_call:
+    inputs:
+    CI_ENV:
+      required: true
+      type: string
+    CONTENTFUL_ENVIRONMENT:
+      required: true
+      type: string
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
+      ECR_REPOSITORY:
+        required: true
+      ECR_REGISTRY:
+        required: true
+
+
   push:
     branches:
       - production
