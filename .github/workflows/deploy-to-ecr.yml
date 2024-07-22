@@ -23,7 +23,6 @@ on:
       ECR_REGISTRY:
         required: true
 
-
   push:
     branches:
       - production
@@ -32,6 +31,8 @@ on:
 
   pull_request:
     types: [opened, synchronize, reopened]
+
+  workflow_dispatch:
 
 jobs:
   build:
@@ -64,7 +65,6 @@ jobs:
           name: shipping-service-jar
           path: target/*-spring-boot.jar
 
-
   analyze:
     name: Analyze
     needs: build
@@ -95,12 +95,11 @@ jobs:
           mvn -B compile
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Obligatorio-DevOps-175577-181513_shipping-service -Dsonar.java.binaries=target/classes
 
-     
   push_to_ecr:
     name: Push Docker Image to ECR
     needs: analyze
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/production' || github.ref == 'refs/heads/branch-staging' || github.ref == 'refs/heads/branch-develop') }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/production' || github.ref == 'refs/heads/branch-staging' || github.ref == 'refs/heads/branch-develop') || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v3
 
